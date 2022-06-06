@@ -6,7 +6,7 @@ export default function SortTable() {
     const [crypto, setCrypto] = useState([]);
 
     const getCryptoDetails = async () => {
-        axios.get("https://api.coinstats.app/public/v1/coins?skip=0&limit=20")
+        axios.get("https://api.coinstats.app/public/v1/coins?skip=0&limit=30")
             .then(response => {
                 setCrypto(response.data.coins);
             })
@@ -29,6 +29,17 @@ export default function SortTable() {
         }
     }
 
+    const getLocalItemsTemp = () => {
+        let localFavouriteListTemp = localStorage.getItem('favouritesTemp');
+
+        if (localFavouriteListTemp) {
+            return JSON.parse(localStorage.getItem('favouritesTemp'));
+        } else {
+            return [];
+        }
+    }
+
+
     const [order, setOrder] = useState("asc");
     const sorting = (col) => {
         if (order === "asc") {
@@ -43,14 +54,20 @@ export default function SortTable() {
     }
 
     const [favouriteList, setFavouriteList] = useState(getLocalItems());
-    const [favourite, setFavourite] = useState([]);
+    const [favourite, setFavourite] = useState(getLocalItemsTemp);
     const addToFavouriteList = (id) => {
         if (favourite.length < 3 && !favourite.includes(id)) {
             favourite.push(id);
+            const favList = favourite.map((item) => {
+                return crypto.filter((cId) => cId.id === item)[0]
+            })
+            setFavouriteList(favList);
+
+            const tempFavList = favourite.map((item) => {
+                return item;
+            })
+            setFavourite(tempFavList);
         }
-        setFavouriteList(favourite.map((item) => {
-            return crypto.filter((cId) => cId.id === item)[0]
-        }))
     }
 
     const removeFavourite = (id) => {
@@ -59,19 +76,33 @@ export default function SortTable() {
                 favouriteList.splice(idx, 1);
             }
         })
-        setFavouriteList(favouriteList.map((item) => {
-            return item;
-        }))
 
-        setFavourite(favouriteList.map((item) => {
+        favourite.filter((items, j) => {
+            if (items === id) {
+                favourite.splice(j, 1);
+            }
+        })
+
+        const removedFavList = favouriteList.map((item) => {
             return item;
-        }))
+        })
+        setFavouriteList(removedFavList);
+
+        const removedTempFavList = favouriteList.map((item) => {
+            return item.id;
+        })
+        setFavourite(removedTempFavList);
     }
 
     //Save to localStorage
     useEffect(() => {
         localStorage.setItem('favourites', JSON.stringify(favouriteList));
     }, [favouriteList])
+
+    useEffect(() => {
+        localStorage.setItem('favouritesTemp', JSON.stringify(favourite));
+    }, [favourite])
+
 
     return (
         <div className='containerr'>
