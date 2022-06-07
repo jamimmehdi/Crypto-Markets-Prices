@@ -5,8 +5,9 @@ export default function SortTable() {
 
     const [crypto, setCrypto] = useState([]);
 
+    //fetch api
     const getCryptoDetails = async () => {
-        axios.get("https://api.coinstats.app/public/v1/coins?skip=0&limit=30")
+        await axios.get("https://api.coinstats.app/public/v1/coins?skip=0&limit=30")
             .then(response => {
                 setCrypto(response.data.coins);
             })
@@ -19,6 +20,7 @@ export default function SortTable() {
         getCryptoDetails();
     }, []);
 
+    //getting saved fav items
     const getLocalItems = () => {
         let localFavouriteList = localStorage.getItem('favourites');
 
@@ -58,11 +60,14 @@ export default function SortTable() {
     const addToFavouriteList = (id) => {
         if (favourite.length < 3 && !favourite.includes(id)) {
             favourite.push(id);
+
             const favList = favourite.map((item) => {
                 return crypto.filter((cId) => cId.id === item)[0]
             })
+
             setFavouriteList(favList);
 
+            //Updating the temp favlist
             const tempFavList = favourite.map((item) => {
                 return item;
             })
@@ -71,23 +76,27 @@ export default function SortTable() {
     }
 
     const removeFavourite = (id) => {
+        //Removing the items from main array
         favouriteList.filter((items, idx) => {
             if (items.id === id) {
                 favouriteList.splice(idx, 1);
             }
         })
 
+        //Removing the items from temp array
         favourite.filter((items, j) => {
             if (items === id) {
                 favourite.splice(j, 1);
             }
         })
 
+        //updating main favlist
         const removedFavList = favouriteList.map((item) => {
             return item;
         })
         setFavouriteList(removedFavList);
 
+        //updating temp favlist
         const removedTempFavList = favouriteList.map((item) => {
             return item.id;
         })
